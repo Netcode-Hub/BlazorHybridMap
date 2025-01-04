@@ -1,0 +1,17 @@
+﻿@page "/"
+@using BlazorHybridMap.Service
+@inject IJSRuntime jS
+@inject ILocationService locationService
+<div id="map" style="height:100vh; width:100%"></div>
+
+@code{
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var location = await locationService.GetCurrentLocation();
+            await jS.InvokeVoidAsync("initializeMap", location.Lat, location.Lng);
+        }
+        
+    }
+}
