@@ -2,6 +2,7 @@
 @using BlazorHybridMap.Service
 @inject IJSRuntime jS
 @inject ILocationService locationService
+<input id="search-box" type="search" placeholder="Search for a location" style="width:100%; padding:8px" class="mb-1"/>
 <div id="map" style="height:100vh; width:100%"></div>
 
 @code{
@@ -11,7 +12,8 @@
         {
             var location = await locationService.GetCurrentLocation();
             await jS.InvokeVoidAsync("initializeMap", location.Lat, location.Lng);
-        }
-        
+        } 
     }
+
+    async Task ShowRoute() => await jS.InvokeVoidAsync("CalculateRoute");
 }

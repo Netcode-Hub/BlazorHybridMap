@@ -11,6 +11,8 @@ function initializeMap(lat, lng) {
     }
 
     SetMapMarker(lat, lng, "Your Current Location");
+    Search();
+
 }
 
 function SetMapMarker(lat, lng, title) {
@@ -30,10 +32,10 @@ function SetMapMarker(lat, lng, title) {
         infoWindow.open(map, marker);
     });
 
-    GetLocationDetails(lat, lng);
+    GetLocationDetails(lat, lng, title);
 }
 
-function GetLocationDetails(lat, lng) {
+function GetLocationDetails(lat, lng, title) {
     const geocoder = new google.maps.Geocoder();
     geocoder.geocode({ location: { lat, lng } }, (results, status) => {
         if (status === "OK" && results[0]) {
@@ -43,12 +45,12 @@ function GetLocationDetails(lat, lng) {
             const state = addressComponents.find(c => c.types.includes("administrative_area_level_1"))?.long_name;
             const postalCode = addressComponents.find(c => c.types.includes("postal_code"))?.long_name;
 
-            SetInfoWindow(lat, lng, country, town, state, postalCode);
+            SetInfoWindow(lat, lng, country, town, state, postalCode, title);
         }
     });
 }
 
-function SetInfoWindow(lat, lng, country, town, state, postalCode) {
+function SetInfoWindow(lat, lng, country, town, state, postalCode, title) {
     infoWindow = new google.maps.InfoWindow();
     infoWindow.setContent(
         `
@@ -61,7 +63,7 @@ function SetInfoWindow(lat, lng, country, town, state, postalCode) {
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
                 max-width: 250px;
         ">
-        <h3 style="margin:00 10px; font-size:16px; color: #333;"> Location Details </h3>
+        <h3 style="margin:00 10px; font-size:16px; color: #333;"> ${title} </h3>
          <p style="margin: 0; color: #555;"><strong>Country:</strong> ${country || "Not available"}</p>
          <p style="margin: 0; color: #555;"><strong>Town:</strong> ${town || "Not available"}</p>
          <p style="margin: 0; color: #555;"><strong>State:</strong> ${state || "Not available"}</p>
@@ -76,3 +78,27 @@ function SetInfoWindow(lat, lng, country, town, state, postalCode) {
         infoWindow.open(map, marker);
     }
 }
+
+function Search() {
+    const input = document.getElementById("search-box");
+    const autocomplete = new google.maps.places.Autocomplete(input);
+    autocomplete.bindTo("bounds", map);
+    autocomplete.addListener("place_changed", () => {
+        const place = autocomplete.getPlace();
+        if (!place.geometry || !place.geometry.location) {
+            alert("No details found for the selected location");
+            return;
+        } else {
+            const lat = place.geometry.location.lat();
+            const lng = place.geometry.location.lng();
+            if (marker) {
+                marker.setMap(null);
+                marker = null;
+            }
+            SetMapMarker(lat, lng, "Found Location");
+            map.setCenter(place.geometry.location);
+            map.setZoom(15);
+        }
+    })
+}
+
