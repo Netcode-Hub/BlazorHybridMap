@@ -3,6 +3,14 @@
 @inject IJSRuntime jS
 @inject ILocationService locationService
 <input id="search-box" type="search" placeholder="Search for a location" style="width:100%; padding:8px" class="mb-1"/>
+<div class="m-2 hstack gap-2">
+    <input id="start-location" type="text" placeholder="Start Location" class="form-control"/>
+    <input id="end-location" type="text" placeholder="End Location" class="form-control"/>
+    <button class="btn btn-success" @onclick="ShowRoute">Show Route</button>
+</div>
+<div id="route-info" style="padding: 8px; background: #f9f9f9; border: 1px solid #ddd">
+    Route Info will appear here...
+</div>
 <div id="map" style="height:100vh; width:100%"></div>
 
 @code{

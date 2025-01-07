@@ -1,4 +1,4 @@
-let map, marker, infoWindow;
+let map, marker, infoWindow, directionsService, directionsRenderer;
 function initializeMap(lat, lng) {
     map = new google.maps.Map(document.getElementById("map"), {
         center: { lat: lat, lng: lng },
@@ -13,6 +13,9 @@ function initializeMap(lat, lng) {
     SetMapMarker(lat, lng, "Your Current Location");
     Search();
 
+    directionsService = new google.maps.DirectionsService();
+    directionsRenderer = new google.maps.DirectionsRenderer();
+    InitializeStartEndFields();
 }
 
 function SetMapMarker(lat, lng, title) {
@@ -102,3 +105,45 @@ function Search() {
     })
 }
 
+
+let startLatLng, endLatLng;
+function InitializeStartEndFields() {
+    const startInput = document.getElementById("start-location");
+    const endInput = document.getElementById("end-location");
+    const startAutocomplete = new google.maps.places.Autocomplete(startInput);
+    const endAutocomplete = new google.maps.places.Autocomplete(endInput);
+
+
+    startAutocomplete.addListener("place_changed", () => {
+        const place = startAutocomplete.getPlace();
+        startLatLng = place.geometry.location;
+    });
+    endAutocomplete.addListener("place_changed", () => {
+        const place = endAutocomplete.getPlace();
+        endLatLng = place.geometry.location;
+    });
+}
+
+function CalculateRoute() {
+    if (marker) {
+        marker.setMap(null);
+        marker = null;
+    }
+    const request = {
+        origin: startLatLng,
+        destination: endLatLng,
+        travelMode: google.maps.TravelMode.DRIVING
+    };
+    directionsService.route(request, (result, status) => {
+        if (status == google.maps.DirectionsStatus.OK) {
+            directionsRenderer.setDirections(result);
+            const route = result.routes[0];
+            
+            const leg = route.legs[0];
+            const distance = leg.distance.text;
+            const duration = leg.duration.text;
+            const infoDiv = document.getElementById("route-info");
+            infoDiv.innerHTML = `Distance: ${distance} <br> Duration: ${duration}`
+        }
+    });
+}
